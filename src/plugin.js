@@ -1,6 +1,9 @@
 import videojs from 'video.js';
 import { version as VERSION } from '../package.json';
 
+import CMCDObject from './cmcd';
+import logRenditionChange from './utils';
+
 // Default options for the plugin.
 const defaults = {};
 
@@ -26,6 +29,64 @@ class Cmcd {
 
     this.ready(() => {
       this.addClass('vjs-cmcd');
+      const player = window.player = this;
+      const vhs = window.vhs = player.tech().vhs;
+      const cmcdAttributes = new CMCDObject();
+
+      logRenditionChange();
+
+      player.on('waiting', () => {
+        videojs.log('player is waiting');
+      });
+
+      player.on('dispose', () => {
+        videojs.log('player will dispose');
+      });
+
+      player.on('play', () => {
+        videojs.log('player play');
+      });
+
+      player.on('playing', () => {
+        videojs.log('player playing');
+      });
+
+      player.on('pause', () => {
+        videojs.log('player paused');
+      });
+
+      player.on('loadedmetadata', () => {
+        videojs.log('player loadedmetadata'); // may be used for first
+      });
+
+      player.on('durationchange', () => {
+        videojs.log('player durationchange'); // may be used for first
+      });
+
+      vhs.xhr.beforeRequest = function (options) {
+        cmcdAttributes.reset();
+
+        try {
+          console.log('Options URI', options.uri);
+          const media = vhs.playlists.media();
+          cmcdAttributes.setMtpFromBandWidth(vhs.systemBandwidth);
+          cmcdAttributes.setBrFromBandWidth(media.attributes.BANDWIDTH);
+          cmcdAttributes.setStFromDuration(player.duration());
+  
+          const currentIndex = media.segments.findIndex(s => s.resolvedUri === options.uri);
+          if (currentIndex >= 0) {
+            cmcdAttributes.setDFromSeconds(media.segments[currentIndex].duration);
+            if (currentIndex < media.segments.length - 1) {
+              cmcdAttributes.setNor(media.segments[currentIndex + 1].uri);
+            }
+          }
+        } catch (e) {
+          console.log(e)
+        }
+
+        options.uri += '?' + cmcdAttributes.queryString();  // TODO, won't work if there is already a query string in uri
+        return options;
+      };
     });
   }
 }

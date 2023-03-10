@@ -8,9 +8,19 @@
 </head>
 <body>
   <video id="videojs-cmcd-player" class="video-js vjs-default-skin" controls>
+    <!--
     <source src="//vjs.zencdn.net/v/oceans.mp4" type='video/mp4'>
     <source src="//vjs.zencdn.net/v/oceans.webm" type='video/webm'>
+    <source src='https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8' type='application/x-mpegURL'>
+  -->
+  <source src='https://cph-p2p-msl.akamaized.net/hls/live/2000341/test/master.m3u8' type='application/x-mpegURL'>
   </video>
+  <label for="video-sources">Choose a video:</label>
+  <select name="video-sources" id="video-sources">
+    <option value="video1" selected>Video 1</option>
+    <option value="video2">Video 2</option>
+    <option value="video3">Video 3</option>
+  </select>
   <ul>
     <li><a href="/test/debug.html">Run unit tests in browser.</a></li>
     <li><a href="docs/api/">Read generated docs.</a></li>
